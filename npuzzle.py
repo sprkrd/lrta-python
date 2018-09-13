@@ -54,7 +54,7 @@ class NPuzzleBoard(environment.State):
             assert self.n()+1 == len(initial_configuration)
             self._board = tuple(initial_configuration)
         else:
-            self._board = tuple(range(self.n()+1))
+            self._board = (*range(1,self.n()+1), 0)
         
     def __hash__(self):
         return hash(self._board)
@@ -88,21 +88,19 @@ class NPuzzleBoard(environment.State):
             return NPuzzleBoard(self._n1sqrt, board)
         return None
 
-    def successors(self):
-        successors = []
-        for a in ACTIONS:
-            succ = self.successor(a)
-            if succ is not None:
-                successors.append((a, succ))
-        return successors
-
     def render(self):
         for row in range(self._n1sqrt):
             print("\t".join(str(cell) for cell in
                 self._board[row*self._n1sqrt:(row+1)*self._n1sqrt]))
 
+    def actions(self):
+        return ACTIONS
+
     def n(self):
         return self._n1sqrt*self._n1sqrt - 1
+
+    def done(self):
+        return self._board == (*range(1,self.n()+1), 0)
 
     def manhattan_distance(self):
         distance = 0
@@ -116,4 +114,8 @@ class NPuzzleBoard(environment.State):
         return distance
 
 
+class ManhattanDistanceHeuristic(environment.Heuristic):
+
+    def heuristic(self, state):
+        return state.manhattan_distance()
 

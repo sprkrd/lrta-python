@@ -31,11 +31,36 @@ class State:
         raise NotImplementedError()
 
     def successors(self):
-        raise NotImplementedError()
+        successors = []
+        for a in self.actions():
+            succ = self.successor(a)
+            if succ is not None:
+                successors.append((a, succ))
+        return successors
 
     def actions(self):
         raise NotImplementedError()
 
     def render(self):
         raise NotImplementedError()
+
+
+class Heuristic:
+
+    def __init__(self, cached=False):
+        if cached:
+            self._cache = {}
+
+    def heuristic(self, state):
+        raise NotImplementedError()
+
+    def __call__(self, state):
+        try:
+            h = self._cache[state]
+        except AttributeError:
+            h = self.heuristic(state)
+        except KeyError:
+            h = self.heuristic(state)
+            self._cache[state] = h
+        return h
 
