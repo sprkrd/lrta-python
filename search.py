@@ -34,6 +34,45 @@ def minimin(state, heur, goal, lookahead):
             # alpha = min(f_min, alpha)
     # return alpha
 
+
+class Rta:
+
+    def __init__(self, heur, goal, lookahead, lrta=False):
+        self._lrta = lrta
+        self._cache = {}
+        self._heur = heur
+        self._goal = goal
+        self._lookahead = lookahead
+        self._solution_len = 0
+
+    def reset(self):
+        self._cache = {}
+
+    def step(self, env):
+        current = env.state()
+        if not self._goal(current):
+            best = (float('inf'), None)
+            second_best = (float('inf'), None)
+            for action, successor in current.successors():
+                try:
+                    h = self._cache[successor]
+                except KeyError:
+                    h = minimin(successor, self._heur, self._goal, self._lookahead)
+                f = 1 + h
+                if f < best[0]:
+                    second_best = best
+                    best = (f, action)
+                elif f < second_best[0]:
+                    second_best = (f, action)
+                if best[1] is None:
+                    raise Exception("dead end")
+                if self._lrta or second_best[1] is None:
+                    cache[current] = best[0]
+                else:
+                    cache[current] = second_best[0]
+                env.step(best[1])
+
+
 def rta(env, heur, goal, lookahead):
     cache = {}
     current = env.state()

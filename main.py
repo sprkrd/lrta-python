@@ -11,7 +11,7 @@ def print_usage():
     print("exit: -1")
 
 def main():
-    env = npuzzle.NPuzzle(4, seed=42)
+    env = npuzzle.NPuzzle(3)
     env.render()
     print("---")
     search.rta(env,
