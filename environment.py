@@ -1,3 +1,5 @@
+import random
+
 class Environment:
 
     def render(self):
@@ -16,6 +18,9 @@ class Environment:
         raise NotImplementedError()
 
     def state(self):
+        raise NotImplementedError()
+
+    def steps(self):
         raise NotImplementedError()
 
 
@@ -63,4 +68,20 @@ class Heuristic:
             h = self.heuristic(state)
             self._cache[state] = h
         return h
+
+
+def random_walk(state, random_walk_length, repeat=False, rng=None):
+    rng = rng or random.Random()
+    if not repeat:
+        visited = set([state])
+    for _ in range(random_walk_length):
+        succ = state.successors()
+        if not repeat:
+            succ = [s for _, s in succ if s not in visited]
+        if not succ:
+            break
+        state = rng.sample(succ, 1)[0]
+        if not repeat:
+            visited.add(state)
+    return state
 

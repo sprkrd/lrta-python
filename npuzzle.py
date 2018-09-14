@@ -1,6 +1,5 @@
 import environment
 import random
-from math import sqrt
 
 DOWN = 0
 UP = 1
@@ -11,10 +10,14 @@ ACTIONS = [DOWN, UP, RIGHT, LEFT]
 
 class NPuzzle(environment.Environment):
 
-    def __init__(self, n1sqrt=3, seed=None):
-        self._rng = random.Random(seed)
-        self._state = NPuzzleBoard(n1sqrt)
-        self._goal = NPuzzleBoard()
+    def __init__(self, n1sqrt=3, difficulty=None, seed=None):
+        rng = random.Random(seed)
+        if difficulty is None:
+            random_walk_length = rng.randint(0, 4*n1sqrt**3//3)
+        else:
+            random_walk_length = round(difficulty*4*n1sqrt**3/3)
+        self._initial_state = environment.random_walk(NPuzzleBoard(n1sqrt),
+                random_walk_length, False, rng)
         self.reset()
 
     def render(self):
@@ -24,6 +27,7 @@ class NPuzzle(environment.Environment):
         succ = self._state.successor(action)
         if succ is not None:
             self._state = succ
+        self._steps += 1
         return self.done() 
     
     def actions(self):
@@ -33,17 +37,17 @@ class NPuzzle(environment.Environment):
         return self._state.n()
 
     def reset(self):
-        random_walk_length = self.n()**3
-        for _ in range(random_walk_length):
-            succ = self._state.successors()
-            _, next_state = self._rng.sample(succ, 1)[0]
-            self._state = next_state
+        self._state = self._initial_state
+        self._steps = 0
 
     def done(self):
-        return self._state == self._goal
+        return self._state.done()
 
     def state(self):
         return self._state
+
+    def steps(self):
+        return self._steps
 
 
 class NPuzzleBoard(environment.State):
