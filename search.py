@@ -1,7 +1,8 @@
+import heapq
 import time
 
 def minimin(state, heur, goal, lookahead, order=False, stats=False):
-    start = time.clock()
+    start = time.time()
     generated_nodes = 0
     if lookahead == 0 or goal(state):
         f_min = heur(state)
@@ -15,7 +16,7 @@ def minimin(state, heur, goal, lookahead, order=False, stats=False):
                 h = heur(succ)
                 successors.append((g+1+h, h, succ))
             if order:
-                successors.sort(key=lambda t: t[:2], reverse=True)
+                successors.sort(reverse=True)
             generated_nodes += len(successors)
             for f_succ, h_succ, successor in successors:
                 g_succ = f_succ - h_succ
@@ -25,15 +26,12 @@ def minimin(state, heur, goal, lookahead, order=False, stats=False):
                     f_min = f_succ
                 else:
                     stack.append((g_succ, successor))
-    elapsed = time.clock() - start
+    elapsed = time.time() - start
     if stats:
         return f_min, generated_nodes, elapsed
     else:
         return f_min
 
-
-def astar(state, heur, goal, lookahead):
-    pass
 
 # def minimin(state, heur, goal, lookahead, g=0, alpha=float('inf')):
     # if lookahead == 0 or goal(state):
@@ -44,6 +42,43 @@ def astar(state, heur, goal, lookahead):
             # f_min = minimin(successor, heur, goal, lookahead-1, g+1, alpha)
             # alpha = min(f_min, alpha)
     # return alpha
+
+
+def reconstruct_path(tree, s):
+    plan = []
+    while s is not None:
+        t = tree[s]
+        if t is None:
+            s = None
+        else:
+            a, s = t
+            plan.append(a)
+    plan.reverse()
+    return plan
+
+
+def astar(state, heur, goal, lookahead):
+    inf = float('inf')
+    queue = [(0, heur(state), state)]
+    g_seen = {state: 0}
+    tree = {state: None}
+    plan = None
+    while queue:
+        f_s, h_s, s = heapq.heappop(queue)
+        if goal(s):
+            plan = reconstruct_path(tree, s)
+            break
+        g_s = f_s - h_s
+        for a, n in s.successors():
+            g_n = g_s + 1
+            g_n_prev = g_seen.get(n, inf)
+            if g_n < g_n_prev:
+                g_seen[n] = g_n
+                h_n = heur(n)
+                f_n = g_n + h_n
+                tree[n] = (a, s)
+                heappush(queue, (f_n, h_n, n))
+    return plan
 
 
 class Rta:
@@ -85,12 +120,12 @@ class Rta:
 
     def __call__(self, env, timeout=float('inf'), stats=False):
         timeout = timeout/1000
-        start = time.clock()
+        start = time.time()
         elapsed = 0
         done = env.done()
         while not env.done() and elapsed < timeout:
             done = self.step(env)
-            elapsed = time.clock() - start
+            elapsed = time.time() - start
         if stats:
             return done, elapsed
         else:

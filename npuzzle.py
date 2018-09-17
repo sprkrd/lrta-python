@@ -68,6 +68,11 @@ class NPuzzleBoard(environment.State):
             return NotImplemented
         return self._board == other._board
 
+    def __lt__(self, other):
+        if not isinstance(other, NPuzzleBoard):
+            return NotImplemented
+        return self._board < other._board
+
     def successor(self, action):
         hole_index = self._board.index(0)
         hole_r = hole_index // self._n1sqrt

@@ -32,6 +32,9 @@ class State:
     def __eq__(self, other):
         raise NotImplementedError()
 
+    def __lt__(self, other):
+        raise NotImplementedError()
+
     def successor(self, action):
         raise NotImplementedError()
 
