@@ -57,18 +57,23 @@ def reconstruct_path(tree, s):
     return plan
 
 
-def astar(state, heur, goal, lookahead):
+def astar(state, heur, goal, stats=False):
+    start = time.time()
     inf = float('inf')
-    queue = [(0, heur(state), state)]
+    h_state = heur(state)
+    queue = [(h_state, h_state, state)]
     g_seen = {state: 0}
     tree = {state: None}
     plan = None
+    generated_nodes = 0
     while queue:
         f_s, h_s, s = heapq.heappop(queue)
         if goal(s):
             plan = reconstruct_path(tree, s)
             break
         g_s = f_s - h_s
+        successors = s.successors()
+        generated_nodes += len(successors)
         for a, n in s.successors():
             g_n = g_s + 1
             g_n_prev = g_seen.get(n, inf)
@@ -77,8 +82,12 @@ def astar(state, heur, goal, lookahead):
                 h_n = heur(n)
                 f_n = g_n + h_n
                 tree[n] = (a, s)
-                heappush(queue, (f_n, h_n, n))
-    return plan
+                heapq.heappush(queue, (f_n, h_n, n))
+    if stats:
+        elapsed = time.time() - start
+        return plan, generated_nodes, elapsed
+    else:
+        return plan
 
 
 class Rta:

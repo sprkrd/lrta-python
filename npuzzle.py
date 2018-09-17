@@ -102,6 +102,12 @@ class NPuzzleBoard(environment.State):
             print("\t".join(str(cell) for cell in
                 self._board[row*self._n1sqrt:(row+1)*self._n1sqrt]))
 
+    def __str__(self):
+        return str(self._board)
+
+    def __repr__(self):
+        return str(self._board)
+
     def actions(self):
         return ACTIONS
 
